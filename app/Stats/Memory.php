@@ -8,6 +8,8 @@ class Memory implements Stat
 {
     use ExecuteCommands;
 
+    protected $dataMemory = [];
+
     /**
      * Sample the stat.
      *
@@ -17,12 +19,14 @@ class Memory implements Stat
     {
         $memory = $this->getMemoryInfo();
 
-        MemoryUsage::create([
+        $this->dataMemory = [
             'total' => $memory['total'],
             'available' => $memory['free'],
             'used' => $memory['used'],
             'free' => $memory['free'],
-        ]);
+        ];
+
+        MemoryUsage::create($this->dataMemory);
     }
 
     /**

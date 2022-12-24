@@ -19,6 +19,7 @@ abstract class AbstractStat
     protected $alertStreak = 0;
     protected $prevAlertStreak = 0;
     protected $okStreak = 0;
+    protected $data = [];
 
     /**
      * The monitor instance.
@@ -43,11 +44,13 @@ abstract class AbstractStat
      *
      * @param  \App\Monitors\Monitor $monitor
      * @param  array $results
+     * @param array $data
      * @return bool
      */
-    protected function testResults(array $results)
+    protected function testResults(array $results, array $data = [])
     {
         $this->totalResults = count($results);
+        $this->data = $data;
 
         // Not enough data to check.
         if ($this->totalResults < $this->monitor->minutes) {
@@ -86,12 +89,14 @@ abstract class AbstractStat
      */
     protected function handleState()
     {
+        $data = $this->data;
+
         // First time notification.
         if ($this->lastAlertState == self::UNKNOWN) {
             if ($this->lastState == self::OK) {
-                Alert::createForMonitor($this->monitor, self::OK);
+                Alert::createForMonitor($this->monitor, self::OK, $data);
             } else {
-                Alert::createForMonitor($this->monitor, self::ALERT);
+                Alert::createForMonitor($this->monitor, self::ALERT, $data);
             }
             return;
         }
@@ -100,12 +105,12 @@ abstract class AbstractStat
         if ($this->lastState == self::ALERT) {
             if ($this->alertStreak == $this->monitor->minutes) {
                 if ($this->lastAlertState != self::ALERT) {
-                    Alert::createForMonitor($this->monitor, self::ALERT);
+                    Alert::createForMonitor($this->monitor, self::ALERT, $data);
                 }
             }
         } elseif ($this->lastState == self::OK) {
             if ($this->lastAlertState !== self::OK) {
-                Alert::createForMonitor($this->monitor, self::OK);
+                Alert::createForMonitor($this->monitor, self::OK, $data);
             }
         } else {
             // Throw exception? Unknown state.

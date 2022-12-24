@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\DB;
 
 class DiskSpace extends AbstractStat implements Stat
 {
+    protected $dataDisk = [
+        'total' => 0,
+        'free' => 0,
+        'used' => 0
+    ];
     /**
      * Sample the stat.
      *
@@ -22,11 +27,13 @@ class DiskSpace extends AbstractStat implements Stat
         $usedPercent = ($usedSpace / $totalSpace) * 100;
         $freePercent = ($freeSpace / $totalSpace) * 100;
 
-        DiskUsage::create([
+        $this->dataDisk = [
             'total' => $totalSpace,
             'free' => $freePercent,
             'used' => $usedPercent,
-        ]);
+        ];
+
+        DiskUsage::create($this->dataDisk);
     }
 
     /**
@@ -50,6 +57,6 @@ LEFT JOIN (SELECT * FROM alerts WHERE monitor_id = ? AND monitor_type = ? ORDER 
             $this->monitor->type,
         ]);
 
-        return $this->testResults($results);
+        return $this->testResults($results, $this->dataDisk);
     }
 }

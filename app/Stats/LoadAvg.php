@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 
 class LoadAvg extends AbstractStat implements Stat
 {
+    protected $dataAvg = [];
+
     /**
      * Create a new Stat instance.
      *
@@ -33,11 +35,13 @@ class LoadAvg extends AbstractStat implements Stat
             $loads = sys_getloadavg();
             $loadPercent = round($loads[0] / max(1, $cores) * 100, 2);
 
-            LoadAvgModel::create([
+            $this->dataAvg = [
                 'load_avg' => $loads[0],
                 'load_avg_percent' => $loadPercent,
                 'cpus' => (int) $cores,
-            ]);
+            ];
+
+            LoadAvgModel::create($this->dataAvg);
         }
     }
 
@@ -64,6 +68,6 @@ LEFT JOIN (SELECT * FROM alerts WHERE monitor_id = ? AND monitor_type = ? ORDER 
             $this->monitor->type,
         ]);
 
-        return $this->testResults($results);
+        return $this->testResults($results, $this->dataAvg);
     }
 }

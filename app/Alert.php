@@ -21,7 +21,7 @@ class Alert extends Model
      * @param  string $state
      * @return $this
      */
-    public static function createForMonitor(Monitor $monitor, $state)
+    public static function createForMonitor(Monitor $monitor, $state, array $data = [])
     {
         $alert = static::create([
             'monitor_id' => $monitor->key,
@@ -29,7 +29,7 @@ class Alert extends Model
             'monitor_state' => $state,
         ]);
 
-        Notifier::alert($monitor, $alert);
+        Notifier::alert($monitor, $alert, $data);
 
         return $alert;
     }
